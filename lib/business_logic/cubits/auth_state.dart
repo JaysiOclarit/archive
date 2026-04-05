@@ -12,7 +12,7 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class Authenticated extends AuthState {
-  final UserModel user; // <-- Now holds the full profile!
+  final UserModel user;
 
   const Authenticated(this.user);
 
