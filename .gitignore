@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# The FlutterFire generated options file
+lib/firebase_options.dart
+
+# Android Firebase Config
+android/app/google-services.json
+
+# iOS & macOS Firebase Config
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+firebase_app_id_file.json
+
+# Environment Variables (Standard Best Practice)
+.env
+.env*
