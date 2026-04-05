@@ -122,15 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: isLoading
-                              ? () {}
-                              : () {
-                                  // SEND DATA TO THE CUBIT!
-                                  context.read<AuthCubit>().logIn(
-                                    _emailController.text.trim(),
-                                    _passwordController.text.trim(),
-                                  );
-                                },
+                          onPressed: () {},
                           style: TextButton.styleFrom(
                             // PRO-TIP: Flutter adds invisible padding to TextButtons by default.
                             // We set these to zero so the text aligns *perfectly* with the left edge of your input box.
@@ -152,7 +144,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 35),
-                  TactileButton(text: "LOG IN", onPressed: () {}),
+                  BlocBuilder<AuthCubit, AuthState>(
+                    builder: (context, state) {
+                      final isLoading = state is AuthLoading;
+                      return TactileButton(
+                        text: "LOG IN",
+                        onPressed: isLoading
+                            ? () {}
+                            : () {
+                                // When the user taps "Log In", we call the logIn function in our AuthCubit
+                                context.read<AuthCubit>().logIn(
+                                  _emailController.text,
+                                  _passwordController.text,
+                                );
+                              },
+                      );
+                    },
+                  ),
                   const SizedBox(height: 30),
                   OrDivider(),
                   const SizedBox(height: 30),
