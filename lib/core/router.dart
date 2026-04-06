@@ -1,6 +1,6 @@
-import 'package:archive/presentation/screens/archive_landing_screen.dart';
-import 'package:archive/presentation/screens/login_screen.dart';
-import 'package:archive/presentation/screens/signup_screen.dart';
+import 'package:archive/features/auth/presentation/pages/archive_landing_screen.dart';
+import 'package:archive/features/auth/presentation/pages/login_screen.dart';
+import 'package:archive/features/auth/presentation/pages/signup_screen.dart';
 import 'package:go_router/go_router.dart';
 
 final goRouter = GoRouter(
