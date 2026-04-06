@@ -16,17 +16,19 @@ final class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
-final class Authenticated extends AuthState {
+// 1. Strict Naming Convention Applied
+final class AuthAuthenticated extends AuthState {
   final UserEntity user;
 
-  const Authenticated(this.user);
+  const AuthAuthenticated(this.user);
 
   @override
   List<Object?> get props => [user];
 }
 
-final class Unauthenticated extends AuthState {
-  const Unauthenticated();
+// 1. Strict Naming Convention Applied
+final class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
 }
 
 final class AuthError extends AuthState {
@@ -38,6 +40,7 @@ final class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
-final class PasswordResetSuccess extends AuthState {
-  const PasswordResetSuccess();
+// 1. Strict Naming Convention Applied
+final class AuthPasswordResetSuccess extends AuthState {
+  const AuthPasswordResetSuccess();
 }

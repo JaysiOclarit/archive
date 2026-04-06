@@ -42,11 +42,12 @@ class _LoginScreenState extends State<LoginScreen> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(state.message)));
-        } else if (state is Authenticated) {
+        } else if (state is AuthAuthenticated) {
           // SUCCESS! The BLoC says they are logged in.
           // Route them to the main archive and clear the navigation history
           // so they can't hit the "back" button to go to the login screen.
-          context.go('/');
+          // Use approute names for navigation consistency and to avoid hardcoding paths all over the app.
+          context.goNamed(AppRouteNames.landing);
         }
       },
       child: Scaffold(
