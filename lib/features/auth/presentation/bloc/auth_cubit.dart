@@ -1,69 +1,115 @@
-import 'package:archive/features/auth/data/models/user_model.dart';
+import 'package:archive/features/auth/domain/usecases/register_user.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:archive/features/auth/data/repositories/auth_repository.dart';
+
 import 'auth_state.dart';
+import 'package:archive/features/auth/domain/entities/user_entity.dart';
+import 'package:archive/features/auth/domain/usecases/login_user.dart';
+import 'package:archive/features/auth/domain/usecases/logout_user.dart';
+import 'package:archive/features/auth/domain/usecases/reset_password.dart';
+import 'package:archive/features/auth/domain/usecases/get_user_profile.dart';
+import 'package:archive/features/auth/domain/usecases/update_profile.dart';
+import 'package:archive/features/auth/domain/usecases/get_current_user_id.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  final AuthRepository _repository;
+  final LoginUser _loginUser;
+  final LogoutUser _logoutUser;
+  final RegisterUser _registerUser; // Added missing usecase
+  final ResetPassword _resetPassword;
+  final GetUserProfile _getUserProfile;
+  final UpdateProfile _updateProfile;
+  final GetCurrentUserId _getCurrentUserId;
 
-  AuthCubit({required AuthRepository repository})
-    : _repository = repository,
-      super(AuthInitial());
+  AuthCubit({
+    required LoginUser loginUser,
+    required LogoutUser logoutUser,
+    required RegisterUser registerUser, // Added
+    required ResetPassword resetPassword,
+    required GetUserProfile getUserProfile,
+    required UpdateProfile updateProfile,
+    required GetCurrentUserId getCurrentUserId,
+  }) : _loginUser = loginUser,
+       _registerUser = registerUser,
+       _logoutUser = logoutUser,
+       _resetPassword = resetPassword,
+       _getUserProfile = getUserProfile,
+       _updateProfile = updateProfile,
+       _getCurrentUserId = getCurrentUserId,
+       super(AuthInitial());
 
   /// Checks if the user is already logged in when they open the app
   Future<void> checkAuthStatus() async {
-    final userId = _repository.currentUserId;
-    if (userId != null) {
-      // User is logged into Firebase, now fetch their custom profile!
-      try {
-        final userProfile = await _repository.getUserProfile(userId);
-        emit(Authenticated(userProfile));
-      } catch (e) {
-        // If the profile fails to load, force them to log in again
+    final idRes = await _getCurrentUserId.call();
+    await idRes.match((failure) async => emit(Unauthenticated()), (
+      userId,
+    ) async {
+      if (userId != null) {
+        final res = await _getUserProfile.call(userId);
+        res.match(
+          (failure) => emit(Unauthenticated()),
+          (userEntity) => emit(Authenticated(userEntity)),
+        );
+      } else {
         emit(Unauthenticated());
       }
-    } else {
-      emit(Unauthenticated());
-    }
+    });
+  }
+
+  Future<void> signUp(String email, String password) async {
+    emit(AuthLoading());
+    final res = await _registerUser.call(
+      RegisterParams(email: email, password: password),
+    );
+
+    res.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (userId) => logIn(email, password), // Auto-login after signup
+    );
   }
 
   Future<void> logIn(String email, String password) async {
-    try {
-      emit(AuthLoading());
-      final userId = await _repository.login(email, password);
+    emit(AuthLoading());
 
-      // Fetch the custom profile after successful login
-      final userProfile = await _repository.getUserProfile(userId);
-      emit(Authenticated(userProfile));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+    final loginRes = await _loginUser.call(
+      LoginParams(email: email, password: password),
+    );
+    await loginRes.match(
+      (failure) async {
+        emit(AuthError(failure.message));
+      },
+      (userId) async {
+        final profileRes = await _getUserProfile.call(userId);
+        profileRes.match(
+          (failure) => emit(AuthError(failure.message)),
+          (userEntity) => emit(Authenticated(userEntity)),
+        );
+      },
+    );
   }
 
   Future<void> logOut() async {
-    await _repository.logout();
-    emit(Unauthenticated());
+    final res = await _logoutUser.call();
+    res.match(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(Unauthenticated()),
+    );
   }
 
-  /// Triggers the Firebase password reset email
-  Future<void> resetPassword(String email) async {
-    try {
-      await _repository.resetPassword(email);
-      // We don't change the state here, because they are still Unauthenticated
-      // The UI will just show a "Check your email!" SnackBar when this finishes.
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+  Future<void> resetUserPassword(String email) async {
+    emit(AuthLoading());
+    final res = await _resetPassword.call(email);
+
+    res.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(PasswordResetSuccess()),
+    );
   }
 
   /// Update Profile function for when they edit their bio
-  Future<void> updateProfile(UserModel updatedUser) async {
-    try {
-      await _repository.updateProfile(updatedUser);
-      // Instantly update the UI with the new data!
-      emit(Authenticated(updatedUser));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+  Future<void> updateProfile(UserEntity updatedUser) async {
+    final res = await _updateProfile.call(updatedUser);
+    res.match(
+      (failure) => emit(AuthError(failure.message)),
+      (_) => emit(Authenticated(updatedUser)),
+    );
   }
 }

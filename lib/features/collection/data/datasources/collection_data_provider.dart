@@ -1,10 +1,9 @@
 // lib/data/dataproviders/collection_data_provider.dart
-import 'package:archive/features/auth/data/repositories/auth_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class ICollectionDataProvider {
   /// Fetches all collections (and their bookmarks) as raw Maps.
-  Future<List<Map<String, dynamic>>> getRawCollections();
+  Future<List<Map<String, dynamic>>> getRawCollections(String userId);
 
   /// Saves a single collection (represented as a Map) to the database.
   Future<void> saveRawCollection(Map<String, dynamic> rawCollection);
@@ -40,7 +39,7 @@ class MockCollectionProvider implements ICollectionDataProvider {
   ];
 
   @override
-  Future<List<Map<String, dynamic>>> getRawCollections() async {
+  Future<List<Map<String, dynamic>>> getRawCollections(String userId) async {
     // Simulate a 1-second network/database delay
     await Future.delayed(const Duration(seconds: 1));
     return _mockDatabase;
@@ -70,22 +69,16 @@ class MockCollectionProvider implements ICollectionDataProvider {
 
 class FirebaseCollectionProvider implements ICollectionDataProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthRepository _authRepo;
 
-  FirebaseCollectionProvider({required AuthRepository authRepo})
-    : _authRepo = authRepo;
+  FirebaseCollectionProvider();
 
   @override
-  Future<List<Map<String, dynamic>>> getRawCollections() async {
-    // 1. Get the current user's ID
-    final userId = _authRepo.currentUserId;
-
-    // 2. Security Check: If no one is logged in, they shouldn't fetch data!
-    if (userId == null) {
+  Future<List<Map<String, dynamic>>> getRawCollections(String userId) async {
+    if (userId.isEmpty) {
       throw Exception('Cannot fetch collections: User is not logged in.');
     }
 
-    // 3. THE FILTER: Ask Firebase only for documents where userId matches!
+    // THE FILTER: Ask Firebase only for documents where userId matches!
     final snapshot = await _firestore
         .collection('collections')
         .where('userId', isEqualTo: userId)

@@ -18,7 +18,7 @@ class HeroTextModule extends StatelessWidget {
           decoration: BoxDecoration(
             // We use the secondary color (Dried Clay) at a very low opacity
             // to create that subtle tan "paper tag" background
-            color: theme.colorScheme.secondary.withOpacity(0.15),
+            color: theme.colorScheme.secondary.withAlpha((0.15 * 255).round()),
             borderRadius: BorderRadius.circular(
               4,
             ), // Slightly sharper corners than buttons
@@ -46,9 +46,7 @@ class HeroTextModule extends StatelessWidget {
           child: Text(
             "A tactile sanctuary for the articles, essays, and fragments that define your intellectual landscape. Organized by intent, not algorithms.",
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(
-                0.8,
-              ), // Slightly muted charcoal
+              color: theme.colorScheme.onSurface.withAlpha((0.8 * 255).round()), // Slightly muted charcoal
               height:
                   1.6, // Taller line-height makes paragraphs feel more "editorial"
             ),

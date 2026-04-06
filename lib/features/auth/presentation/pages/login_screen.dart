@@ -1,3 +1,4 @@
+import 'package:archive/core/router/route_names.dart';
 import 'package:archive/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:archive/features/auth/presentation/bloc/auth_state.dart';
 import 'package:archive/core/widgets/editorial_text.dart';
@@ -5,7 +6,6 @@ import 'package:archive/core/widgets/label_text.dart';
 import 'package:archive/core/widgets/or_divider.dart';
 import 'package:archive/core/widgets/tactile_button.dart';
 import 'package:archive/core/widgets/tactile_input_field.dart';
-import 'package:archive/features/auth/presentation/pages/archive_landing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -93,8 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       "Return to your curated collection of literature, observations, and timeless bookmarks",
                       style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurface.withOpacity(
-                          0.8,
+                        color: theme.colorScheme.onSurface.withAlpha(
+                          (0.8 * 255).round(),
                         ), // Slightly muted charcoal
                         height:
                             1.6, // Taller line-height makes paragraphs feel more "editorial"
@@ -117,8 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   // THE NEW FORGOT PASSWORD BUTTON
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, state) {
-                      // Check if the cubit is currently processing
-                      final isLoading = state is AuthLoading;
                       return Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -133,8 +131,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             "Forgot password?",
                             style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.onSurface.withOpacity(
-                                0.6,
+                              color: theme.colorScheme.onSurface.withAlpha(
+                                (0.6 * 255).round(),
                               ), // A subtle, editorial gray link
                               fontWeight: FontWeight.bold,
                             ),
@@ -177,7 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       LabelText('New to the Archive?'),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          context.goNamed(AppRouteNames.signup);
+                        },
                         child: Text(
                           'Sign Up',
                           style: TextStyle(

@@ -1,30 +1,43 @@
-import 'package:archive/features/auth/data/models/user_model.dart';
 import 'package:equatable/equatable.dart';
+import 'package:archive/features/auth/domain/entities/user_entity.dart';
 
-abstract class AuthState extends Equatable {
+sealed class AuthState extends Equatable {
   const AuthState();
+
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-class AuthInitial extends AuthState {}
+final class AuthInitial extends AuthState {
+  const AuthInitial();
+}
 
-class AuthLoading extends AuthState {}
+final class AuthLoading extends AuthState {
+  const AuthLoading();
+}
 
-class Authenticated extends AuthState {
-  final UserModel user;
+final class Authenticated extends AuthState {
+  final UserEntity user;
 
   const Authenticated(this.user);
 
   @override
-  List<Object> get props => [user];
+  List<Object?> get props => [user];
 }
 
-class Unauthenticated extends AuthState {}
+final class Unauthenticated extends AuthState {
+  const Unauthenticated();
+}
 
-class AuthError extends AuthState {
+final class AuthError extends AuthState {
   final String message;
+
   const AuthError(this.message);
+
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
+}
+
+final class PasswordResetSuccess extends AuthState {
+  const PasswordResetSuccess();
 }

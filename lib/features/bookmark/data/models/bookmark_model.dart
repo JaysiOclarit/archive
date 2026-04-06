@@ -1,49 +1,26 @@
-import 'package:equatable/equatable.dart';
+import 'package:archive/features/bookmark/domain/entities/bookmark_entity.dart';
 
-class Bookmark extends Equatable {
-  final String id;
-  final String url;
-  final String title;
-  final String description;
-  final String imageUrl;
-  final DateTime createdAt;
-  final String? folderId;
-  final List<String> tags;
-
-  const Bookmark({
-    required this.id,
-    required this.url,
-    required this.title,
-    required this.description,
-    required this.imageUrl,
-    required this.createdAt,
-    this.folderId,
-    this.tags = const [],
+class BookmarkModel extends BookmarkEntity {
+  const BookmarkModel({
+    required super.id,
+    required super.url,
+    required super.title,
+    required super.description,
+    required super.imageUrl,
+    required super.createdAt,
+    super.folderId,
+    super.tags = const [],
   });
 
-  // 1. Equatable: List all properties that determine if a bookmark is "the same"
-  @override
-  List<Object?> get props => [
-    id,
-    url,
-    title,
-    description,
-    imageUrl,
-    createdAt,
-    folderId,
-    tags,
-  ];
-
-  // 2. copyWith: Used when a user edits a bookmark or adds a tag
-  Bookmark copyWith({
+  BookmarkModel copyWith({
     String? title,
     String? description,
     String? folderId,
     List<String>? tags,
     DateTime? createdAt,
   }) {
-    return Bookmark(
-      id: id, // ID and URL usually never change
+    return BookmarkModel(
+      id: id,
       url: url,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -54,15 +31,13 @@ class Bookmark extends Equatable {
     );
   }
 
-  // 3. fromJson: Used by your Repository to parse data from the web
-  factory Bookmark.fromMap(Map<String, dynamic> map) {
-    return Bookmark(
+  factory BookmarkModel.fromMap(Map<String, dynamic> map) {
+    return BookmarkModel(
       id: map['id'] ?? '',
       url: map['url'] ?? '',
       title: map['title'] ?? 'Untitled',
       description: map['description'] ?? '',
       imageUrl: map['imageUrl'] ?? '',
-      // Parse the String from the database into a real DateTime object
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
           : DateTime.now(),
@@ -71,7 +46,6 @@ class Bookmark extends Equatable {
     );
   }
 
-  // 4. toMap: Used to save data back to your database or API
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -79,9 +53,22 @@ class Bookmark extends Equatable {
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
-      'createdAt': createdAt.toIso8601String(), // Converts Date back to String
+      'createdAt': createdAt.toIso8601String(),
       'folderId': folderId,
       'tags': tags,
     };
+  }
+
+  BookmarkEntity toEntity() {
+    return BookmarkEntity(
+      id: id,
+      url: url,
+      title: title,
+      description: description,
+      imageUrl: imageUrl,
+      createdAt: createdAt,
+      folderId: folderId,
+      tags: tags,
+    );
   }
 }

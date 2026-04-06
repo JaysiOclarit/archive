@@ -1,54 +1,27 @@
+import 'package:archive/features/collection/domain/entities/collection_entity.dart';
 import 'package:archive/features/bookmark/data/models/bookmark_model.dart';
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 
-class Collection extends Equatable {
-  final String id;
-  final String userId;
-  final String name;
-  final String notes;
-  final int iconCodePoint;
-  final String? iconFontFamily;
-  final List<Bookmark> bookmarks;
-  final DateTime createdAt;
-
-  const Collection({
-    required this.id,
-    required this.userId,
-    required this.name,
-    this.notes = '',
-    required this.iconCodePoint,
-    this.iconFontFamily,
-    required this.bookmarks,
-    required this.createdAt,
+class CollectionModel extends CollectionEntity {
+  const CollectionModel({
+    required super.id,
+    required super.userId,
+    required super.name,
+    super.notes = '',
+    required super.iconCodePoint,
+    super.iconFontFamily,
+    required super.bookmarks, // List<BookmarkEntity> but we will pass BookmarkModel inside
+    required super.createdAt,
   });
 
-  // A helper getter to turn the saved integers back into a usable Flutter Icon
-  IconData get icon =>
-      IconData(iconCodePoint, fontFamily: iconFontFamily ?? 'MaterialIcons');
-
-  // 1. Equatable: List all properties that determine if a bookmark is "the same"
-  @override
-  List<Object?> get props => [
-    id,
-    name,
-    notes,
-    iconCodePoint,
-    iconFontFamily,
-    bookmarks,
-    createdAt,
-  ];
-
-  // 2. copyWith: Used when a user edits a collection
-  Collection copyWith({
+  CollectionModel copyWith({
     String? name,
     String? notes,
     int? iconCodePoint,
     String? iconFontFamily,
-    List<Bookmark>? bookmarks,
+    List<BookmarkModel>? bookmarks,
     DateTime? createdAt,
   }) {
-    return Collection(
+    return CollectionModel(
       id: id,
       userId: userId,
       name: name ?? this.name,
@@ -60,21 +33,19 @@ class Collection extends Equatable {
     );
   }
 
-  factory Collection.fromMap(Map<String, dynamic> map) {
-    return Collection(
+  factory CollectionModel.fromMap(Map<String, dynamic> map) {
+    return CollectionModel(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       name: map['name'] ?? 'Untitled Collection',
       notes: map['notes'] ?? '',
       iconCodePoint: map['iconCodePoint'] ?? 0xe2af,
       iconFontFamily: map['iconFontFamily'],
-      // Map through the list of raw data and convert each Map into a Bookmark object
       bookmarks:
           (map['bookmarks'] as List<dynamic>?)
-              ?.map((x) => Bookmark.fromMap(x as Map<String, dynamic>))
+              ?.map((x) => BookmarkModel.fromMap(x as Map<String, dynamic>))
               .toList() ??
           [],
-      // Parse the String from the database into a real DateTime object
       createdAt: map['createdAt'] != null
           ? DateTime.parse(map['createdAt'])
           : DateTime.now(),
@@ -89,8 +60,21 @@ class Collection extends Equatable {
       'notes': notes,
       'iconCodePoint': iconCodePoint,
       'iconFontFamily': iconFontFamily,
-      'bookmarks': bookmarks.map((b) => b.toMap()).toList(),
+      'bookmarks': bookmarks.map((b) => (b as BookmarkModel).toMap()).toList(),
       'createdAt': createdAt.toIso8601String(),
     };
+  }
+
+  CollectionEntity toEntity() {
+    return CollectionEntity(
+      id: id,
+      userId: userId,
+      name: name,
+      notes: notes,
+      iconCodePoint: iconCodePoint,
+      iconFontFamily: iconFontFamily,
+      bookmarks: bookmarks.map((b) => (b as BookmarkModel).toEntity()).toList(),
+      createdAt: createdAt,
+    );
   }
 }

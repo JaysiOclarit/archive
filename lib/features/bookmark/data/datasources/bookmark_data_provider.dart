@@ -1,12 +1,15 @@
-import 'package:archive/features/auth/data/repositories/auth_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class IBookmarkDataProvider {
   /// Fetches all bookmarks as raw Maps, regardless of what folder they are in.
-  Future<List<Map<String, dynamic>>> getRawBookmarks();
+  /// Fetch bookmarks for a specific user.
+  Future<List<Map<String, dynamic>>> getRawBookmarks(String userId);
 
-  // ADD THIS NEW LINE:
-  Future<List<Map<String, dynamic>>> getRawBookmarksByFolder(String folderId);
+  /// Fetch bookmarks for a specific user and folder.
+  Future<List<Map<String, dynamic>>> getRawBookmarksByFolder(
+    String userId,
+    String folderId,
+  );
 
   /// Saves a single bookmark (represented as a Map) to the database.
   Future<void> saveRawBookmark(Map<String, dynamic> rawBookmark);
@@ -42,6 +45,7 @@ class MockBookmarkProvider implements IBookmarkDataProvider {
   ];
   @override
   Future<List<Map<String, dynamic>>> getRawBookmarksByFolder(
+    String userId,
     String folderId,
   ) async {
     await Future.delayed(const Duration(seconds: 1));
@@ -50,7 +54,7 @@ class MockBookmarkProvider implements IBookmarkDataProvider {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRawBookmarks() async {
+  Future<List<Map<String, dynamic>>> getRawBookmarks(String userId) async {
     // Simulate a 1-second network/database delay
     await Future.delayed(const Duration(seconds: 1));
     return _mockDatabase;
@@ -81,20 +85,17 @@ class MockBookmarkProvider implements IBookmarkDataProvider {
 class FirebaseBookmarkProvider implements IBookmarkDataProvider {
   // Get an instance of the Firestore database
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthRepository _authRepo;
 
-  FirebaseBookmarkProvider({required AuthRepository authRepo})
-    : _authRepo = authRepo;
+  FirebaseBookmarkProvider();
 
   @override
   Future<List<Map<String, dynamic>>> getRawBookmarksByFolder(
+    String userId,
     String folderId,
   ) async {
-    // 1. Get the current user
-    final userId = _authRepo.currentUserId;
-    if (userId == null) throw Exception('User not logged in!');
+    if (userId.isEmpty) throw Exception('User not logged in!');
 
-    // 2. Compound Query: Must match BOTH the user ID and the Folder ID
+    // Compound Query: Must match BOTH the user ID and the Folder ID
     final snapshot = await _firestore
         .collection('bookmarks')
         .where('userId', isEqualTo: userId)
@@ -109,12 +110,10 @@ class FirebaseBookmarkProvider implements IBookmarkDataProvider {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRawBookmarks() async {
-    // 1. Get the current user
-    final userId = _authRepo.currentUserId;
-    if (userId == null) throw Exception('User not logged in!');
+  Future<List<Map<String, dynamic>>> getRawBookmarks(String userId) async {
+    if (userId.isEmpty) throw Exception('User not logged in!');
 
-    // 2. Filter: Only get bookmarks owned by this user
+    // Filter: Only get bookmarks owned by this user
     final snapshot = await _firestore
         .collection('bookmarks')
         .where('userId', isEqualTo: userId)

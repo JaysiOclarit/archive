@@ -1,71 +1,115 @@
-import 'package:archive/features/bookmark/data/models/bookmark_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:archive/features/bookmark/data/repositories/bookmark_repository.dart';
+import 'package:archive/features/bookmark/domain/entities/bookmark_entity.dart';
+import 'package:archive/features/bookmark/domain/usecases/get_all_bookmarks.dart';
+import 'package:archive/features/bookmark/domain/usecases/get_bookmarks_by_folder_id.dart';
+import 'package:archive/features/bookmark/domain/usecases/save_bookmark.dart';
+import 'package:archive/features/bookmark/domain/usecases/delete_bookmark.dart';
 import 'bookmark_state.dart';
 
 class BookmarkCubit extends Cubit<BookmarkState> {
-  // The Cubit needs the Repository to get the data
-  final BookmarkRepository _repository;
+  final GetAllBookmarks _getAllBookmarks;
+  final GetBookmarksByFolderId _getBookmarksByFolderId;
+  final SaveBookmark _saveBookmark;
+  final DeleteBookmark _deleteBookmark;
 
-  BookmarkCubit({required BookmarkRepository repository})
-    : _repository = repository,
-      super(BookmarkInitial());
+  List<BookmarkEntity> _currentList = [];
+  String? _currentFolderId;
 
-  /// 1. READ: Fetches all bookmarks
-  Future<void> loadBookmarks() async {
-    try {
-      emit(BookmarkLoading());
-      final bookmarks = await _repository.getAllBookmarks();
-      emit(BookmarkLoaded(bookmarks));
-    } catch (e) {
-      emit(BookmarkError(e.toString()));
-    }
+  BookmarkCubit({
+    required GetAllBookmarks getAllBookmarks,
+    required GetBookmarksByFolderId getBookmarksByFolderId,
+    required SaveBookmark saveBookmark,
+    required DeleteBookmark deleteBookmark,
+  }) : _getAllBookmarks = getAllBookmarks,
+       _getBookmarksByFolderId = getBookmarksByFolderId,
+       _saveBookmark = saveBookmark,
+       _deleteBookmark = deleteBookmark,
+       super(const BookmarkInitial());
+
+  Future<void> loadAll() async {
+    _currentFolderId = null;
+    emit(const BookmarkLoading());
+    final res = await _getAllBookmarks.call();
+
+    res.match((failure) => emit(BookmarkError(failure.message)), (bookmarks) {
+      _currentList = bookmarks;
+      emit(BookmarkLoaded(_currentList));
+    });
   }
 
-  /// Fetches bookmarks specifically for one folder
-  Future<void> loadBookmarksForFolder(String folderId) async {
-    try {
-      // 1. Tell the UI to show a loading spinner
-      emit(BookmarkLoading());
+  Future<void> loadByFolderId(String folderId) async {
+    _currentFolderId = folderId;
+    emit(const BookmarkLoading());
+    final res = await _getBookmarksByFolderId.call(folderId);
 
-      // 2. Ask the repository for the specific folder's bookmarks
-      final bookmarks = await _repository.getBookmarksByFolderId(folderId);
-
-      // 3. Tell the UI to show the filtered list!
-      emit(BookmarkLoaded(bookmarks));
-    } catch (e) {
-      emit(BookmarkError(e.toString()));
-    }
+    res.match((failure) => emit(BookmarkError(failure.message)), (bookmarks) {
+      _currentList = bookmarks;
+      emit(BookmarkLoaded(_currentList));
+    });
   }
 
-  /// 2. CREATE: Adds a new bookmark
-  Future<void> addBookmark(Bookmark newBookmark) async {
-    try {
-      await _repository.saveBookmark(newBookmark);
-      await loadBookmarks(); // Refresh the list
-    } catch (e) {
-      emit(BookmarkError('Failed to save bookmark: $e'));
+  void searchBookmarks(String query) {
+    if (query.isEmpty) {
+      emit(BookmarkLoaded(_currentList));
+      return;
     }
+
+    final lowerQuery = query.toLowerCase();
+    final filteredList = _currentList.where((bookmark) {
+      final nameMatches = bookmark.title.toLowerCase().contains(lowerQuery);
+      final notesMatch = bookmark.description.toLowerCase().contains(
+        lowerQuery,
+      );
+      return nameMatches || notesMatch;
+    }).toList();
+
+    emit(BookmarkLoaded(filteredList));
   }
 
-  /// 3. UPDATE: Edits an existing bookmark (like changing the URL or Title)
-  Future<void> updateBookmark(Bookmark updatedBookmark) async {
-    try {
-      // Same magic as Collections: save handles updates too!
-      await _repository.saveBookmark(updatedBookmark);
-      await loadBookmarks();
-    } catch (e) {
-      emit(BookmarkError('Failed to update bookmark: $e'));
+  void filterByType(String type) {
+    if (type.isEmpty) {
+      emit(BookmarkLoaded(_currentList));
+      return;
     }
+
+    final filteredList = _currentList.where((bookmark) {
+      return bookmark.tags.contains(type);
+    }).toList();
+
+    emit(BookmarkLoaded(filteredList));
   }
 
-  /// 4. DELETE: Removes a bookmark by its ID
+  Future<void> addBookmark(BookmarkEntity newBookmark) async {
+    final res = await _saveBookmark.call(newBookmark);
+    await res.match(
+      (failure) async => emit(BookmarkError(failure.message)),
+      (_) async => await _refresh(),
+    );
+  }
+
   Future<void> deleteBookmark(String id) async {
-    try {
-      await _repository.deleteBookmark(id);
-      await loadBookmarks();
-    } catch (e) {
-      emit(BookmarkError('Failed to delete bookmark: $e'));
+    final res = await _deleteBookmark.call(id);
+    await res.match(
+      (failure) async =>
+          emit(BookmarkError('Failed to delete bookmark: ${failure.message}')),
+      (_) async => await _refresh(),
+    );
+  }
+
+  Future<void> updateBookmark(BookmarkEntity updatedBookmark) async {
+    final res = await _saveBookmark.call(updatedBookmark);
+    await res.match(
+      (failure) async =>
+          emit(BookmarkError('Failed to update bookmark: ${failure.message}')),
+      (_) async => await _refresh(),
+    );
+  }
+
+  Future<void> _refresh() async {
+    if (_currentFolderId != null) {
+      await loadByFolderId(_currentFolderId!);
+    } else {
+      await loadAll();
     }
   }
 }

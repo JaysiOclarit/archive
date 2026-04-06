@@ -1,102 +1,77 @@
-import 'package:archive/features/collection/data/models/collection_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:archive/features/collection/data/repositories/collection_repository.dart';
+import 'package:archive/features/collection/domain/entities/collection_entity.dart';
+import 'package:archive/features/collection/domain/usecases/get_all_collections.dart';
+import 'package:archive/features/collection/domain/usecases/save_collection.dart';
+import 'package:archive/features/collection/domain/usecases/delete_collection.dart';
 import 'collection_state.dart';
 
 class CollectionCubit extends Cubit<CollectionState> {
-  // The Cubit holds a reference to the Repository so it can ask for data
-  final CollectionRepository _repository;
+  final GetAllCollections _getAllCollections;
+  final SaveCollection _saveCollection;
+  final DeleteCollection _deleteCollection;
 
-  // --- ADD THIS: The Master List ---
-  // This holds the real data so we don't lose it when we search
-  List<Collection> _allCollections = [];
+  List<CollectionEntity> _allCollections = [];
 
-  // We inject the repository and set the very first state to Initial
-  CollectionCubit({required CollectionRepository repository})
-    : _repository = repository,
-      super(const CollectionInitial());
+  CollectionCubit({
+    required GetAllCollections getAllCollections,
+    required SaveCollection saveCollection,
+    required DeleteCollection deleteCollection,
+  }) : _getAllCollections = getAllCollections,
+       _saveCollection = saveCollection,
+       _deleteCollection = deleteCollection,
+       super(const CollectionInitial());
 
-  /// This function is called by the UI when the screen opens
   Future<void> loadCollections() async {
-    try {
-      // 1. Tell the UI to show a spinning loading circle
-      emit(CollectionLoading());
+    emit(const CollectionLoading());
+    final res = await _getAllCollections.call();
 
-      // Fetch from Firebase and save to our Master List
-      _allCollections = await _repository.getAllCollections();
-
-      // Tell the UI to show the Master List
+    res.match((failure) => emit(CollectionError(failure.message)), (
+      collections,
+    ) {
+      _allCollections = collections;
       emit(CollectionLoaded(_allCollections));
-    } catch (e) {
-      emit(CollectionError(e.toString()));
-    }
+    });
   }
 
-  // --- ADD THIS SEARCH FUNCTION ---
-  /// Filters the loaded collections in memory (Zero Firebase cost!)
   void searchCollections(String query) {
-    // If the search bar is empty, just show everything again
     if (query.isEmpty) {
       emit(CollectionLoaded(_allCollections));
       return;
     }
 
-    // Convert query to lowercase to make search case-insensitive
     final lowerQuery = query.toLowerCase();
-
-    // Filter the master list
     final filteredList = _allCollections.where((collection) {
       final nameMatches = collection.name.toLowerCase().contains(lowerQuery);
       final notesMatch = collection.notes.toLowerCase().contains(lowerQuery);
-
       return nameMatches || notesMatch;
     }).toList();
 
-    // Emit the newly filtered list! The UI will instantly update.
     emit(CollectionLoaded(filteredList));
   }
 
-  /// This function is called by the UI when a user taps "Save Collection"
-  Future<void> addCollection(Collection newCollection) async {
-    try {
-      // We don't emit loading here if we want to add it silently in the background,
-      // but you can if you want a full-screen spinner.
-
-      // 1. Tell the Data Layer to save the new item to the database
-      await _repository.saveCollection(newCollection);
-
-      // 2. Refresh the list so the UI shows the newly added item
-      await loadCollections();
-    } catch (e) {
-      emit(CollectionError(e.toString()));
-    }
+  Future<void> addCollection(CollectionEntity newCollection) async {
+    final res = await _saveCollection.call(newCollection);
+    await res.match(
+      (failure) async => emit(CollectionError(failure.message)),
+      (_) async => await loadCollections(),
+    );
   }
 
-  /// Deletes a collection and refreshes the list
   Future<void> deleteCollection(String id) async {
-    try {
-      // We don't necessarily need a loading spinner for deletes,
-      // but we do need to catch errors.
-      await _repository.deleteCollection(id);
-
-      // Once deleted from the database, fetch the fresh list!
-      await loadCollections();
-    } catch (e) {
-      emit(CollectionError('Failed to delete folder: $e'));
-    }
+    final res = await _deleteCollection.call(id);
+    await res.match(
+      (failure) async =>
+          emit(CollectionError('Failed to delete folder: ${failure.message}')),
+      (_) async => await loadCollections(),
+    );
   }
 
-  /// Updates an existing collection (e.g., renaming a folder)
-  Future<void> updateCollection(Collection updatedCollection) async {
-    try {
-      // Because our Data Provider uses SetOptions(merge: true),
-      // saveCollection handles both new inserts AND updates!
-      await _repository.saveCollection(updatedCollection);
-
-      // Refresh the screen with the newly updated data
-      await loadCollections();
-    } catch (e) {
-      emit(CollectionError('Failed to update folder: $e'));
-    }
+  Future<void> updateCollection(CollectionEntity updatedCollection) async {
+    final res = await _saveCollection.call(updatedCollection);
+    await res.match(
+      (failure) async =>
+          emit(CollectionError('Failed to update folder: ${failure.message}')),
+      (_) async => await loadCollections(),
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:archive/core/router/route_names.dart';
 import 'package:archive/core/widgets/editorial_text.dart';
 import 'package:archive/core/widgets/label_text.dart';
 import 'package:archive/core/widgets/or_divider.dart';
@@ -5,6 +6,7 @@ import 'package:archive/core/widgets/tactile_button.dart';
 import 'package:archive/core/widgets/tactile_input_field.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -57,9 +59,7 @@ class SignupScreen extends StatelessWidget {
                   child: Text(
                     "Create an account to start curating your personal literary sanctuary",
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(
-                        0.8,
-                      ), // Slightly muted charcoal
+                      color: theme.colorScheme.onSurface.withAlpha((0.8 * 255).round()), // Slightly muted charcoal
                       height:
                           1.6, // Taller line-height makes paragraphs feel more "editorial"
                     ),
@@ -97,7 +97,10 @@ class SignupScreen extends StatelessWidget {
                   children: [
                     LabelText('Already a member of the archive?'),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        //navigate to login screen using approute names
+                        context.goNamed(AppRouteNames.login);
+                      },
                       child: Text(
                         'Login',
                         style: TextStyle(decoration: TextDecoration.underline),

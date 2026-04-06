@@ -1,5 +1,5 @@
+import 'package:archive/core/router/route_names.dart';
 import 'package:archive/core/widgets/tactile_button.dart';
-import 'package:archive/features/auth/presentation/pages/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,8 +21,8 @@ class AuthButtonGroupModule extends StatelessWidget {
             size: 18,
           ), // The subtle directional cue from your design
           onPressed: () {
-            // Pure UI Navigation - No BLoC needed here!
-            context.go('/signup');
+            // Always use named routes for navigation to avoid hardcoding paths and to make it easier to refactor later
+            context.goNamed(AppRouteNames.signup);
           },
         ),
 
@@ -35,7 +35,8 @@ class AuthButtonGroupModule extends StatelessWidget {
           isPrimary:
               false, // Automatically switches to the Warm Paper/Charcoal look
           onPressed: () {
-            context.go('/login');
+            // This is much safer and easier to maintain
+            context.goNamed(AppRouteNames.login);
           },
         ),
       ],

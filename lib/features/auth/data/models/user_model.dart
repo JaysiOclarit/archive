@@ -1,19 +1,15 @@
-class UserModel {
-  final String id;
-  final String email;
-  final String name;
-  final String? title;
-  final String? bio;
+import 'package:archive/features/auth/domain/entities/user_entity.dart';
 
-  UserModel({
-    required this.id,
-    required this.email,
-    required this.name,
-    this.title,
-    this.bio,
+class UserModel extends UserEntity {
+  const UserModel({
+    required super.id,
+    required super.email,
+    required super.name,
+    super.title,
+    super.bio,
   });
 
-  // The copyWith method
+  @override
   UserModel copyWith({
     String? id,
     String? email,
@@ -22,7 +18,6 @@ class UserModel {
     String? bio,
   }) {
     return UserModel(
-      // If a new 'id' is passed, use it. Otherwise, use the existing 'this.id'
       id: id ?? this.id,
       email: email ?? this.email,
       name: name ?? this.name,
@@ -40,17 +35,15 @@ class UserModel {
       bio: map['bio'],
     );
   }
-  // To save it back to Firestore
+
   Map<String, dynamic> toMap() {
     return {
       'email': email,
       'name': name,
-      // Only add these to the database if they actually exist!
       if (title != null) 'title': title,
       if (bio != null) 'bio': bio,
     };
   }
 
-  @override
-  List<Object?> get props => [id, email, name, title, bio];
+  UserEntity toEntity() => this;
 }

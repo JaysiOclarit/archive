@@ -11,7 +11,7 @@ class OrDivider extends StatelessWidget {
     final theme = Theme.of(context);
 
     // Applying your strict "Ghost Border" rule to the horizontal lines
-    final dividerColor = theme.colorScheme.outlineVariant.withOpacity(0.15);
+    final dividerColor = theme.colorScheme.outlineVariant.withAlpha((0.15 * 255).round());
 
     return Row(
       children: [
@@ -25,9 +25,7 @@ class OrDivider extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: LabelText(
             "OR", // Reusing your tiny, all-caps, Manrope font element
-            colorOverride: theme.colorScheme.onSurface.withOpacity(
-              0.5,
-            ), // Faded charcoal
+            colorOverride: theme.colorScheme.onSurface.withAlpha((0.5 * 255).round()), // Faded charcoal
           ),
         ),
 

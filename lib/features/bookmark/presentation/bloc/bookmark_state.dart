@@ -1,35 +1,35 @@
 import 'package:equatable/equatable.dart';
-import 'package:archive/features/bookmark/data/models/bookmark_model.dart';
+import 'package:archive/features/bookmark/domain/entities/bookmark_entity.dart';
 
-abstract class BookmarkState extends Equatable {
+sealed class BookmarkState extends Equatable {
   const BookmarkState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-// 1. App just started, no data yet.
-class BookmarkInitial extends BookmarkState {}
+final class BookmarkInitial extends BookmarkState {
+  const BookmarkInitial();
+}
 
-// 2. Waiting for the Repository to fetch data (Show a loading spinner in UI)
-class BookmarkLoading extends BookmarkState {}
+final class BookmarkLoading extends BookmarkState {
+  const BookmarkLoading();
+}
 
-// 3. Data arrived successfully! (Show the list in UI)
-class BookmarkLoaded extends BookmarkState {
-  final List<Bookmark> bookmarks;
+final class BookmarkLoaded extends BookmarkState {
+  final List<BookmarkEntity> bookmarks;
 
   const BookmarkLoaded(this.bookmarks);
 
   @override
-  List<Object> get props => [bookmarks];
+  List<Object?> get props => [bookmarks];
 }
 
-// 4. Something went wrong (Show a SnackBar or error text)
-class BookmarkError extends BookmarkState {
+final class BookmarkError extends BookmarkState {
   final String message;
 
   const BookmarkError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }

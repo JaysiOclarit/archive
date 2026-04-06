@@ -44,7 +44,7 @@ class TactileInputField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: placeholder,
             hintStyle: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
+              color: theme.colorScheme.onSurface.withAlpha((0.4 * 255).round()),
             ),
 
             // 1. Tell Flutter to paint a background color

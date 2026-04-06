@@ -59,7 +59,6 @@ class ArchiveLandingScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 300,
                     color: theme.colorScheme.surfaceContainer,
-                    // TODO: Replace with your actual image asset later:
                     child: Image.asset(
                       'lib/core/assets/images/landing_screen.jpg',
                       fit: BoxFit.cover,

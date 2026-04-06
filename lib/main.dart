@@ -1,8 +1,8 @@
 import 'package:archive/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:archive/init_dependencies.dart';
 import 'package:archive/core/router/router.dart';
 import 'package:archive/core/theme/app_theme.dart';
-import 'package:archive/features/auth/data/datasources/auth_data_provider.dart';
-import 'package:archive/features/auth/data/repositories/auth_repository.dart';
+import 'package:archive/features/auth/domain/repositories/auth_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,22 +11,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  final myAuthProvider = FirebaseAuthProvider();
-  final authRepository = AuthRepository(authProvider: myAuthProvider);
+  await initDependencies();
 
   runApp(
     MultiRepositoryProvider(
       providers: [
-        // Make the repository available to the whole app
-        RepositoryProvider.value(value: authRepository),
+        // Make the repository available to the whole app as the domain interface
+        RepositoryProvider<AuthRepository>.value(
+          value: getIt<AuthRepository>(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider<AuthCubit>(
-            // Pass the repository into the Cubit here!
-            create: (context) =>
-                AuthCubit(repository: context.read<AuthRepository>()),
-          ),
+          BlocProvider<AuthCubit>(create: (context) => getIt<AuthCubit>()),
         ],
         child: const MyApp(),
       ),

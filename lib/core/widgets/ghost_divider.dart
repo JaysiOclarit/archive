@@ -17,9 +17,7 @@ class GhostVerticalDivider extends StatelessWidget {
     return Container(
       height: height,
       width: 1.0, // The "whisper" thickness
-      color: theme.colorScheme.outlineVariant.withOpacity(
-        0.15,
-      ), // The Ghost Rule
+      color: theme.colorScheme.outlineVariant.withAlpha((0.15 * 255).round()), // The Ghost Rule
     );
   }
 }
