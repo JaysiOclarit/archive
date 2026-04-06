@@ -1,5 +1,5 @@
 import 'package:archive/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:archive/core/router.dart';
+import 'package:archive/core/router/router.dart';
 import 'package:archive/core/theme/app_theme.dart';
 import 'package:archive/features/auth/data/datasources/auth_data_provider.dart';
 import 'package:archive/features/auth/data/repositories/auth_repository.dart';
