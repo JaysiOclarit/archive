@@ -1,18 +1,60 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:archive/core/widgets/app_bar.dart';
 import 'package:archive/core/widgets/tactile_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class BookmarkEmptyState extends StatelessWidget {
+class BookmarkEmptyState extends StatefulWidget {
   const BookmarkEmptyState({super.key});
+
+  @override
+  State<BookmarkEmptyState> createState() => _BookmarkEmptyStateState();
+}
+
+class _BookmarkEmptyStateState extends State<BookmarkEmptyState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+  Timer? _timer;
+  final _random = math.Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+    _scheduleNext();
+  }
+
+  void _scheduleNext() {
+    final delay = Duration(seconds: 4 + _random.nextInt(7));
+    _timer = Timer(delay, () {
+      if (!mounted) return;
+      _controller.forward(from: 0.0).whenComplete(() {
+        if (!mounted) return;
+        _scheduleNext();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: const ArchiveAppBar(title: "The Archive"),
-      backgroundColor:
-          theme.colorScheme.surface, // Using light theme surface color
+      backgroundColor: theme.colorScheme.surface,
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -39,8 +81,21 @@ class BookmarkEmptyState extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Transform.rotate(
-                      angle: -0.05, // Tilt the image slightly
+                    child: AnimatedBuilder(
+                      animation: _animation,
+                      builder: (context, child) {
+                        final t = _animation.value;
+                        final wobble = math.sin(t * math.pi * 2) * 0.07;
+                        final angle = -0.05 + wobble;
+                        final dx = math.sin(t * math.pi * 2) * 6.0;
+                        return Transform.rotate(
+                          angle: angle,
+                          child: Transform.translate(
+                            offset: Offset(dx, 0),
+                            child: child,
+                          ),
+                        );
+                      },
                       child: Image.asset(
                         'lib/core/assets/images/empty_state_bookmark.png',
                         width: 200,

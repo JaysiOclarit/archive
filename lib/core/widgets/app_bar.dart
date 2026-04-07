@@ -21,7 +21,13 @@ class ArchiveAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: Text(
+        title,
+        style: TextStyle(
+          //italic
+          fontStyle: FontStyle.italic,
+        ),
+      ),
       centerTitle: centerTitle,
       leading: leading,
       actions: actions,
