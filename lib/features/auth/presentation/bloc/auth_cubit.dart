@@ -60,10 +60,10 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
-  Future<void> signUp(String email, String password) async {
+  Future<void> signUp(String email, String password, [String? name]) async {
     emit(const AuthLoading());
     final res = await _registerUser.call(
-      RegisterParams(email: email, password: password),
+      RegisterParams(email: email, password: password, name: name),
     );
 
     if (isClosed) return;

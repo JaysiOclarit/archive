@@ -1,0 +1,10 @@
+wing: archive
+rooms:
+- name: lib
+  description: Files from lib/
+- name: testing
+  description: Files from test/
+- name: web
+  description: Files from web/
+- name: general
+  description: Files that don't fit other rooms

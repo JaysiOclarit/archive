@@ -24,10 +24,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, String>> register(
     String email,
-    String password,
-  ) async {
+    String password, {
+    String? name,
+  }) async {
     try {
-      final id = await _authProvider.signUp(email, password);
+      final id = await _authProvider.signUp(email, password, name: name);
       return Right(id);
     } catch (e) {
       return Left(Failure('Failed to create account: $e'));

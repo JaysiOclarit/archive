@@ -53,3 +53,10 @@ Always respect the following folder structure:
 
 - Use `get_it`.
 - When generating a new class, suggest the registration code for `lib/init_dependencies.dart`.
+
+### MemPalace Integration
+
+- **Context Awareness:** Always check the `archive` wing in MemPalace before proposing new features or refactors.
+- **Pattern Matching:** Follow the "Feature-First" architecture patterns (Domain, Data, Presentation) found in the `collection` and `bookmark` wings.
+- **Dependency Management:** When adding features, always provide the `GetIt` registration code following the structure in `lib/init_dependencies.dart`.
+- **Tool Usage:** Use `mempalace_search` to verify if a shared widget (like `TactileButton`) or a core utility (like `Failure`) already exists before creating a new one.

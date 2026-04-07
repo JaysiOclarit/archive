@@ -5,7 +5,11 @@ import 'package:archive/features/auth/domain/entities/user_entity.dart';
 abstract class AuthRepository {
   Future<Either<Failure, String>> login(String email, String password);
 
-  Future<Either<Failure, String>> register(String email, String password);
+  Future<Either<Failure, String>> register(
+    String email,
+    String password, {
+    String? name,
+  });
 
   Future<Either<Failure, Unit>> logout();
 

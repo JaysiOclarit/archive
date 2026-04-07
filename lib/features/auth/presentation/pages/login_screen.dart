@@ -19,13 +19,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // 1. ADD CONTROLLERS TO CAPTURE TEXT
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    // Always dispose controllers to prevent memory leaks!
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -37,32 +35,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is AuthError) {
-          // Show a beautiful error popup if they typed the wrong password
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
-        } else if (state is AuthAuthenticated) {
-          // SUCCESS! The BLoC says they are logged in.
-          // Route them to the main archive and clear the navigation history
-          // so they can't hit the "back" button to go to the login screen.
-          // Use approute names for navigation consistency and to avoid hardcoding paths all over the app.
-          context.goNamed(AppRouteNames.landing);
+        // STRICT COMPLIANCE: Exhaustive switching on sealed class
+        switch (state) {
+          case AuthError(:final message):
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          case AuthAuthenticated():
+            context.goNamed(AppRouteNames.landing);
+          case AuthPasswordResetSuccess():
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Password reset email sent!")),
+            );
+          case AuthInitial():
+          case AuthLoading():
+          case AuthUnauthenticated():
+            break; // Do nothing for these states in the listener
         }
       },
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
-        // The global Warm Paper background
         body: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-
                 children: [
-                  const SizedBox(height: 40), // Top margin
-                  // 1. The Brand Header (We use a Row directly here since it's so simple)
+                  const SizedBox(height: 40),
                   Row(
                     children: [
                       Icon(Icons.menu_book, color: theme.colorScheme.primary),
@@ -75,12 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 60),
-
-                  LabelText("Welcome Back", size: LabelSize.large),
+                  const LabelText("Welcome Back", size: LabelSize.large),
                   const SizedBox(height: 10),
-                  EditorialText(
+                  const EditorialText(
                     "Enter the Archive",
                     size: EditorialSize.medium,
                   ),
@@ -96,9 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurface.withAlpha(
                           (0.8 * 255).round(),
-                        ), // Slightly muted charcoal
-                        height:
-                            1.6, // Taller line-height makes paragraphs feel more "editorial"
+                        ),
+                        height: 1.6,
                       ),
                     ),
                   ),
@@ -115,32 +112,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     isPassword: true,
                   ),
-                  // THE NEW FORGOT PASSWORD BUTTON
-                  BlocBuilder<AuthCubit, AuthState>(
-                    builder: (context, state) {
-                      return Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            // PRO-TIP: Flutter adds invisible padding to TextButtons by default.
-                            // We set these to zero so the text aligns *perfectly* with the left edge of your input box.
-                            padding: EdgeInsets.only(right: 10, top: 15),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        // Call reset password logic
+                        context.read<AuthCubit>().resetUserPassword(
+                          _emailController.text,
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.only(right: 10, top: 15),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        "Forgot password?",
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(
+                            (0.6 * 255).round(),
                           ),
-                          child: Text(
-                            "Forgot password?",
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(
-                                (0.6 * 255).round(),
-                              ), // A subtle, editorial gray link
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 35),
                   BlocBuilder<AuthCubit, AuthState>(
@@ -151,7 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: isLoading
                             ? () {}
                             : () {
-                                // When the user taps "Log In", we call the logIn function in our AuthCubit
                                 context.read<AuthCubit>().logIn(
                                   _emailController.text,
                                   _passwordController.text,
@@ -161,25 +155,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 30),
-                  OrDivider(),
+                  const OrDivider(),
                   const SizedBox(height: 30),
                   TactileButton(
                     text: "CONTINUE WITH GOOGLE",
                     onPressed: () {},
                     isPrimary: false,
-                    // Pass the fully constructed FaIcon widget!
                     icon: const FaIcon(FontAwesomeIcons.google, size: 18),
                   ),
                   const SizedBox(height: 35),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      LabelText('New to the Archive?'),
+                      const LabelText('New to the Archive?'),
                       TextButton(
-                        onPressed: () {
-                          context.goNamed(AppRouteNames.signup);
-                        },
-                        child: Text(
+                        onPressed: () => context.goNamed(AppRouteNames.signup),
+                        child: const Text(
                           'Sign Up',
                           style: TextStyle(
                             decoration: TextDecoration.underline,

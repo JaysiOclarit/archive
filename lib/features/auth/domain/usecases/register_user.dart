@@ -5,8 +5,13 @@ import 'package:archive/features/auth/domain/repositories/auth_repository.dart';
 class RegisterParams {
   final String email;
   final String password;
+  final String? name;
 
-  const RegisterParams({required this.email, required this.password});
+  const RegisterParams({
+    required this.email,
+    required this.password,
+    this.name,
+  });
 }
 
 class RegisterUser {
@@ -15,6 +20,10 @@ class RegisterUser {
   const RegisterUser({required this.repository});
 
   Future<Either<Failure, String>> call(RegisterParams params) {
-    return repository.register(params.email, params.password);
+    return repository.register(
+      params.email,
+      params.password,
+      name: params.name,
+    );
   }
 }

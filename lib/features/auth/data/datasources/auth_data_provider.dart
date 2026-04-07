@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class IAuthDataProvider {
-  Future<String> signUp(String email, String password);
+  Future<String> signUp(String email, String password, {String? name});
   Future<String> signIn(String email, String password);
 
   Future<void> signOut();
@@ -19,7 +19,7 @@ class FirebaseAuthProvider implements IAuthDataProvider {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
-  Future<String> signUp(String email, String password) async {
+  Future<String> signUp(String email, String password, {String? name}) async {
     final credentials = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -29,7 +29,7 @@ class FirebaseAuthProvider implements IAuthDataProvider {
     // Create the Shadow Document with ONLY the required fields
     await _firestore.collection('users').doc(userId).set({
       'email': email,
-      'name': 'New Curator',
+      'name': name ?? 'New Curator',
       // No title or bio saved here. They remain null until the user edits them!
     });
 
