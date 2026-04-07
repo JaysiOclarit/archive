@@ -8,4 +8,16 @@ class AppRouteNames {
   static const String landingPath = '/';
   static const String loginPath = '/login';
   static const String signupPath = '/signup';
+
+  // Add route for after login and redirecting to bookmark empty state
+  static const String bookmarkEmptyState = 'bookmarkEmptyState';
+  static const String bookmarkEmptyStatePath = '/bookmarks_empty';
+
+  // bottom nav routes
+  static const String bookmarksPath = '/bookmarks';
+  static const String collectionsPath = '/collections';
+  static const String profilePath = '/profile';
+  static const String bookmarks = 'bookmarks';
+  static const String collections = 'collections';
+  static const String profile = 'profile';
 }

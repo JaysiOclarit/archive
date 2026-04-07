@@ -15,7 +15,23 @@ class AppTheme {
         secondary: AppPalette.driedClay,
         surfaceContainerLowest: AppPalette.whitePaper,
         surfaceDim: AppPalette.dimPaper,
-            outlineVariant: AppPalette.charcoal.withAlpha((0.15 * 255).round()),
+        outlineVariant: AppPalette.charcoal.withAlpha((0.15 * 255).round()),
+      ),
+
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppPalette.whitePaper,
+        elevation: 0,
+        centerTitle: true,
+        // 4. Define the global text style for ALL App Bar titles
+        titleTextStyle: GoogleFonts.newsreader(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: AppPalette.charcoal, // Adjust based on your palette
+        ),
+        // 5. Define the global style for icons (like the back button or actions)
+        iconTheme: const IconThemeData(
+          color: AppPalette.mossGreen, // Adjust based on your palette
+        ),
       ),
 
       // 2. Typography: The Editorial Conversation
@@ -70,11 +86,11 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-            fillColor: AppPalette.whitePaper.withAlpha((0.5 * 255).round()),
+        fillColor: AppPalette.whitePaper.withAlpha((0.5 * 255).round()),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-                color: AppPalette.charcoal.withAlpha((0.15 * 255).round()),
+            color: AppPalette.charcoal.withAlpha((0.15 * 255).round()),
           ),
         ),
         focusedBorder: const OutlineInputBorder(

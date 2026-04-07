@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
             ).showSnackBar(SnackBar(content: Text(message)));
           case AuthAuthenticated():
-            context.goNamed(AppRouteNames.landing);
+            context.goNamed(AppRouteNames.bookmarks);
           case AuthPasswordResetSuccess():
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Password reset email sent!")),
@@ -143,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       final isLoading = state is AuthLoading;
                       return TactileButton(
                         text: "LOG IN",
+
                         onPressed: isLoading
                             ? () {}
                             : () {
