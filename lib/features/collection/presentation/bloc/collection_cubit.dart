@@ -50,10 +50,19 @@ class CollectionCubit extends Cubit<CollectionState> {
   }
 
   Future<void> addCollection(CollectionEntity newCollection) async {
-    final res = await _saveCollection.call(newCollection);
-    await res.match(
-      (failure) async => emit(CollectionError(failure.message)),
-      (_) async => await loadCollections(),
+    // Optional: emit(CollectionLoading());
+
+    final result = await _saveCollection.call(newCollection);
+
+    result.fold(
+      (failure) {
+        // Handle error (e.g., emit an error state or show a snackbar)
+        print("Error saving collection: ${failure.message}");
+      },
+      (_) {
+        // SUCCESS: Reload the collections so the UI updates!
+        loadCollections();
+      },
     );
   }
 

@@ -19,7 +19,7 @@ class AppTheme {
       ),
 
       appBarTheme: AppBarTheme(
-        backgroundColor: AppPalette.whitePaper,
+        backgroundColor: AppPalette.warmPaper,
         elevation: 0,
         centerTitle: true,
         // 4. Define the global text style for ALL App Bar titles

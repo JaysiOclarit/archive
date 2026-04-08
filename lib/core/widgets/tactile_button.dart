@@ -10,12 +10,16 @@ class TactileButton extends StatelessWidget {
 
   final Widget? icon; // Optional arrow icon
 
+  // Add style for the button
+  final bool isDestructive; // 1. Add the new destructive flag
+
   const TactileButton({
     super.key,
     required this.text,
     required this.onPressed,
     this.isPrimary = true, // Defaults to the solid green button
     this.icon,
+    this.isDestructive = false, // Defaults to safe/normal
   });
 
   @override
@@ -23,18 +27,23 @@ class TactileButton extends StatelessWidget {
     // 1. Grab the global theme you set up earlier
     final theme = Theme.of(context);
 
-    // 2. Determine colors based on the isPrimary flag
-    final backgroundColor = isPrimary
-        ? theme
-              .colorScheme
-              .primary // Our Moss Green
-        : theme.colorScheme.surfaceContainer; // Our layered "Warm Paper" tone
+    // 2. Determine colors based on states (Destructive overrides Primary)
+    Color backgroundColor;
+    Color textColor;
 
-    final textColor = isPrimary
-        ? theme
-              .colorScheme
-              .onPrimary // White text for green background
-        : theme.colorScheme.onSurface; // Charcoal text for paper background
+    if (isDestructive) {
+      // Danger state: Faint red background with solid red text/icon
+      backgroundColor = theme.colorScheme.error.withAlpha((0.1 * 255).round());
+      textColor = theme.colorScheme.error;
+    } else if (isPrimary) {
+      // Primary state: Moss Green
+      backgroundColor = theme.colorScheme.primary;
+      textColor = theme.colorScheme.onPrimary;
+    } else {
+      // Secondary state: Warm Paper
+      backgroundColor = theme.colorScheme.surfaceContainer;
+      textColor = theme.colorScheme.onSurface;
+    }
 
     // 3. Build the tactile shape
     return SizedBox(

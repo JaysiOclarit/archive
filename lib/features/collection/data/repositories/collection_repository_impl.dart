@@ -37,9 +37,13 @@ class CollectionRepositoryImpl implements CollectionRepository {
     CollectionEntity collection,
   ) async {
     try {
+      // 1. Get the current logged-in user's ID
+      final userId = _authRepository.currentUserId;
+      if (userId == null) return Left(Failure('User not logged in'));
+
       final model = CollectionModel(
         id: collection.id,
-        userId: collection.userId,
+        userId: userId, // We can inject it directly into the model here
         name: collection.name,
         notes: collection.notes,
         iconCodePoint: collection.iconCodePoint,
@@ -47,8 +51,14 @@ class CollectionRepositoryImpl implements CollectionRepository {
         bookmarks: collection.bookmarks,
         createdAt: collection.createdAt,
       );
-      final rawMap = model.toMap();
-      await _dataProvider.saveRawCollection(rawMap);
+
+      // 2. Convert to map
+      final map = model.toMap();
+
+      // 3. FORCE INJECT THE USER ID (Just in case the map conversion drops it)
+      map['userId'] = userId;
+
+      await _dataProvider.saveRawCollection(map);
       return Right(unit);
     } catch (e) {
       return Left(Failure('Failed to save collection: $e'));

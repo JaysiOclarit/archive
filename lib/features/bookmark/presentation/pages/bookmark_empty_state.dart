@@ -2,8 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:archive/core/widgets/app_bar.dart';
+import 'package:archive/core/widgets/bookmark_form_sheet.dart';
 import 'package:archive/core/widgets/tactile_button.dart';
+import 'package:archive/core/widgets/tactile_modal_sheet.dart';
+import 'package:archive/features/bookmark/presentation/bloc/bookmark_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class BookmarkEmptyState extends StatefulWidget {
@@ -19,10 +23,12 @@ class _BookmarkEmptyStateState extends State<BookmarkEmptyState>
   late final Animation<double> _animation;
   Timer? _timer;
   final _random = math.Random();
+  late final BookmarkCubit currentCubit;
 
   @override
   void initState() {
     super.initState();
+    currentCubit = context.read<BookmarkCubit>();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -54,7 +60,7 @@ class _BookmarkEmptyStateState extends State<BookmarkEmptyState>
     final theme = Theme.of(context);
     return Scaffold(
       appBar: const ArchiveAppBar(title: "The Archive"),
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.colorScheme.surfaceContainerLow,
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -160,7 +166,17 @@ class _BookmarkEmptyStateState extends State<BookmarkEmptyState>
                   TactileButton(
                     icon: Icon(Icons.add),
                     text: "Add your First Artifact",
-                    onPressed: () {},
+                    onPressed: () {
+                      // Triggering the Input Form
+                      showTactileBottomSheet(
+                        context: context,
+                        child: BlocProvider.value(
+                          // 2. Pass it into the bottom sheet's new widget tree
+                          value: currentCubit,
+                          child: const BookmarkFormSheet(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

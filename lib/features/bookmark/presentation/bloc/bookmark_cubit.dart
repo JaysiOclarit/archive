@@ -15,6 +15,22 @@ class BookmarkCubit extends Cubit<BookmarkState> {
   List<BookmarkEntity> _currentList = [];
   String? _currentFolderId;
 
+  // 1. ADD THIS GETTER:
+  List<String> get availableTags {
+    // .expand flattens the lists of tags into one giant list
+    // .toSet() automatically removes any duplicates
+    // .toList() converts it back to an iterable list
+    final tags = _currentList
+        .expand((bookmark) => bookmark.tags)
+        .toSet()
+        .toList();
+
+    // Optional: Sort them alphabetically so they always appear in the same order
+    tags.sort();
+
+    return tags;
+  }
+
   BookmarkCubit({
     required GetAllBookmarks getAllBookmarks,
     required GetBookmarksByFolderId getBookmarksByFolderId,

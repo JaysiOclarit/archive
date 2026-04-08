@@ -54,6 +54,10 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
   @override
   Future<Either<Failure, Unit>> saveBookmark(BookmarkEntity bookmark) async {
     try {
+      // 1. Get the current logged-in user's ID
+      final userId = _authRepository.currentUserId;
+      if (userId == null) return Left(Failure('User not logged in'));
+
       final model = BookmarkModel(
         id: bookmark.id,
         url: bookmark.url,
@@ -64,7 +68,14 @@ class BookmarkRepositoryImpl implements BookmarkRepository {
         folderId: bookmark.folderId,
         tags: bookmark.tags,
       );
-      await _dataProvider.saveRawBookmark(model.toMap());
+
+      // 2. Convert to map
+      final map = model.toMap();
+
+      // 3. INJECT THE USER ID before passing it to the database
+      map['userId'] = userId;
+
+      await _dataProvider.saveRawBookmark(map);
       return Right(unit);
     } catch (e) {
       return Left(Failure('Failed to save bookmark: $e'));

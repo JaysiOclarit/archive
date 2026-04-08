@@ -1,5 +1,7 @@
 import 'package:archive/features/bookmark/presentation/bloc/bookmark_cubit.dart';
 import 'package:archive/features/bookmark/presentation/pages/bookmark_pages.dart';
+import 'package:archive/features/collection/presentation/bloc/collection_cubit.dart';
+import 'package:archive/features/collection/presentation/pages/collections_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -75,8 +77,13 @@ final goRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/collections',
-              builder: (context, state) =>
-                  const Scaffold(body: Center(child: Text("Collections Tab"))),
+              name: AppRouteNames.collections,
+              builder: (context, state) {
+                return BlocProvider(
+                  create: (context) => getIt<CollectionCubit>(),
+                  child: const CollectionsPage(),
+                );
+              },
             ),
           ],
         ),
@@ -86,6 +93,7 @@ final goRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/profile',
+              name: AppRouteNames.profile,
               builder: (context, state) =>
                   const Scaffold(body: Center(child: Text("Profile Tab"))),
             ),
